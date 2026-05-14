@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ApiGateway/ApiGateway.csproj" />
+    <Project Path="src/BackgroundWorker.App/BackgroundWorker.App.csproj" />
+    <Project Path="src/BackgroundWorker.Core/BackgroundWorker.Core.csproj" />
+    <Project Path="src/Shared/Shared.csproj" />
+  </Folder>
+</Solution>
