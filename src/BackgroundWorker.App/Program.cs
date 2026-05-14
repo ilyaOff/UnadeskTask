@@ -1,8 +1,15 @@
 
 using BackgroundWorker.App.Data;
+using BackgroundWorker.App.Services;
 using BackgroundWorker.Core.Interfaces;
+using BackgroundWorker.Core.Services;
+
+using Infrastructure.FileStorage;
 
 using Microsoft.EntityFrameworkCore;
+
+using Shared.Interfaces;
+using Shared.RabbitMq;
 
 internal class Program
 {
@@ -37,6 +44,18 @@ internal class Program
 
 		builder.Services.AddScoped<IDocumentRepository>(sp =>
 			sp.GetRequiredService<ApplicationDbContext>());
+
+		builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+		builder.Services.AddScoped<IPdfTextExtractor, FakePdfTextExtractor>();
+		builder.Services.AddScoped<DocumentProcessingService>();
+
+		builder.Services.AddHostedService<PdfProcessingConsumer>();
+
+		builder.Services.Configure<RabbitMqSettings>(
+			builder.Configuration.GetSection("RabbitMq"));
+
+		//builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+		//builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 	}
 
 	private static void AddLogging(HostApplicationBuilder builder)
