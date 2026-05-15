@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Shared.Models;
+using Shared.RabbitMq;
 
 namespace ApiGateway.Controllers;
 
@@ -12,14 +13,18 @@ public class DocumentsController : ControllerBase
 {
 	private readonly ILogger<DocumentsController> _logger;
 	private readonly IRabbitMqRpcClient _rpcClient;
+	private readonly RabbitMqSettings _settings;
 
 	public DocumentsController(
 		ILogger<DocumentsController> logger,
-		IRabbitMqRpcClient rpcClient)
+		IRabbitMqRpcClient rpcClient,
+		RabbitMqSettings settings)
 	{
 		_logger = logger;
 		_rpcClient = rpcClient;
+		_settings = settings;
 	}
+
 
 	[HttpGet]
 	public async Task<IActionResult> GetDocuments([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
@@ -32,7 +37,7 @@ public class DocumentsController : ControllerBase
 
 		var response = await _rpcClient.CallAsync<GetDocumentsRequest, GetDocumentsResponse>(
 			request,
-			"rpc.get_documents");
+			_settings.RpcGetDocumentsQueue);
 
 		return Ok(response);
 	}
@@ -49,7 +54,7 @@ public class DocumentsController : ControllerBase
 
 		var response = await _rpcClient.CallAsync<GetPagesRequest, GetPagesResponse>(
 			request,
-			"rpc.get_pages");
+			_settings.RpcGetPagesQueue);
 
 		if(response.Pages.Count == 0)
 			return NotFound($"No pages found for document {id}");
