@@ -18,42 +18,41 @@ internal class Program
 		var builder = Host.CreateApplicationBuilder(args);
 
 		AddLogging(builder);
-		AddServices(builder);
+		AddServices(builder.Services, builder.Configuration, builder.Environment);
 
 		var app = builder.Build();
 
 		app.Run();
 	}
 
-	private static void AddServices(HostApplicationBuilder builder)
+	private static void AddServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
 	{
-		builder.Services.AddDbContext<ApplicationDbContext>(options =>
+		services.AddDbContext<ApplicationDbContext>(options =>
 		{
-			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+			var connectionString = configuration.GetConnectionString("DefaultConnection");
 			options.UseSqlite(connectionString);
 			// Для разработки полезно включить детальное логирование SQL
-			if(builder.Environment.IsDevelopment())
+			if(environment.IsDevelopment())
 			{
 				options.EnableSensitiveDataLogging();
 				options.EnableDetailedErrors();
 			}
 		});
 
-		builder.Services.AddScoped<IDocumentRepository>(sp =>
+		services.AddScoped<IDocumentRepository>(sp =>
 			sp.GetRequiredService<ApplicationDbContext>());
 
-		builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
-		builder.Services.AddScoped<IPdfTextExtractor, FakePdfTextExtractor>();
-		builder.Services.AddScoped<DocumentProcessingService>();
+		services.AddScoped<IFileStorageService, LocalFileStorageService>();
+		services.AddScoped<IPdfTextExtractor, FakePdfTextExtractor>();
+		services.AddScoped<DocumentProcessingService>();
 
-		builder.Services.Configure<RabbitMqSettings>(
-			builder.Configuration.GetSection("RabbitMq"));
+		services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
 
-		builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
-		builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
+		services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+		services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 
-		builder.Services.AddHostedService<PdfProcessingConsumer>();
-		builder.Services.AddHostedService<RpcRequestHandler>();
+		services.AddHostedService<PdfProcessingConsumer>();
+		services.AddHostedService<RpcRequestHandler>();
 	}
 
 	private static void AddLogging(HostApplicationBuilder builder)
