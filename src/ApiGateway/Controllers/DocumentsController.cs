@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
+using Shared.Interfaces;
 using Shared.Models;
 using Shared.RabbitMq;
 
@@ -13,18 +14,48 @@ public class DocumentsController : ControllerBase
 {
 	private readonly ILogger<DocumentsController> _logger;
 	private readonly IRabbitMqRpcClient _rpcClient;
+	private readonly IRabbitMqPublisher _publisher;
+	private readonly IFileStorageService _fileStorage;
 	private readonly RabbitMqSettings _settings;
 
 	public DocumentsController(
 		ILogger<DocumentsController> logger,
 		IRabbitMqRpcClient rpcClient,
+		IRabbitMqPublisher publisher,
+		IFileStorageService fileStorage,
 		RabbitMqSettings settings)
 	{
 		_logger = logger;
 		_rpcClient = rpcClient;
+		_publisher = publisher;
+		_fileStorage = fileStorage;
 		_settings = settings;
 	}
 
+	[HttpPost("upload")]
+	public async Task<IActionResult> Upload(IFormFile file)
+	{
+		var fileId = Guid.NewGuid();
+
+		await using var stream = file.OpenReadStream();
+		bool successSave = await _fileStorage.SaveFileAsync(fileId, stream);
+
+		if(!successSave)
+		{
+			_logger.LogError("Fail to save file {name}", file.FileName);
+			return Problem();
+		}
+
+		await _publisher.PublishAsync(new PdfProcessingMessage
+		{
+			FileId = fileId,
+			FileName = file.FileName,
+			FileSize = file.Length,
+			UploadedAt = DateTime.UtcNow
+		});
+
+		return Ok(new { FileId = fileId });
+	}
 
 	[HttpGet]
 	public async Task<IActionResult> GetDocuments([FromQuery] int page = 1, [FromQuery] int pageSize = 20)

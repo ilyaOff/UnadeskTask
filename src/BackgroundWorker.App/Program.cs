@@ -4,6 +4,7 @@ using BackgroundWorker.Core.Interfaces;
 using BackgroundWorker.Core.Services;
 
 using Infrastructure.FileStorage;
+using Infrastructure.RabbitMq;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -49,7 +50,7 @@ internal class Program
 			builder.Configuration.GetSection("RabbitMq"));
 
 		builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
-		//builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
+		builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 
 		builder.Services.AddHostedService<PdfProcessingConsumer>();
 		builder.Services.AddHostedService<RpcRequestHandler>();

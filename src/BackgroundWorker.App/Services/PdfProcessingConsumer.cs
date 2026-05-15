@@ -2,6 +2,8 @@
 
 using BackgroundWorker.Core.Services;
 
+using Infrastructure.RabbitMq;
+
 using Microsoft.Extensions.Options;
 
 using RabbitMQ.Client;
@@ -37,7 +39,7 @@ public class PdfProcessingConsumer : BackgroundService
 		_channel = await _connection.GetChannelAsync();
 
 		await _channel.QueueDeclareAsync(
-			queue: _settings.QueueName,
+			queue: _settings.PdfProcessingQueue,
 			durable: true,
 			exclusive: false,
 			autoDelete: false,
@@ -75,7 +77,7 @@ public class PdfProcessingConsumer : BackgroundService
 		};
 
 		await _channel.BasicConsumeAsync(
-			queue: _settings.QueueName,
+			queue: _settings.PdfProcessingQueue,
 			autoAck: false,
 			consumer: consumer,
 			cancellationToken: stoppingToken);

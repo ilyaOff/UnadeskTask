@@ -29,6 +29,8 @@ internal class Program
 		services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
 		services.AddSingleton<IRabbitMqRpcClient, RabbitMqRpcClient>();
 
+		services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
+
 		services.AddScoped<IFileStorageService, LocalFileStorageService>();
 	}
 

@@ -4,7 +4,7 @@ using RabbitMQ.Client;
 
 using Shared.RabbitMq;
 
-namespace BackgroundWorker.App.Services;
+namespace Infrastructure.RabbitMq;
 
 public interface IRabbitMqConnection
 {

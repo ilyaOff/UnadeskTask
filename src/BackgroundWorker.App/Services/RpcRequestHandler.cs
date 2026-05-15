@@ -2,6 +2,8 @@
 
 using BackgroundWorker.App.Data;
 
+using Infrastructure.RabbitMq;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
