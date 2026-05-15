@@ -59,6 +59,7 @@ public class DocumentProcessingService
 				Status = ProcessingStatus.Pending// временно 0, обновится после извлечения
 			}; 
 
+			await _documentRepo.AddDocumentAsync(document, token);
 			await _documentRepo.UpdateStatusAsync(fileId, ProcessingStatus.Extracting, token);
 			
 			await NotifyProgress(new ProgressUpdate
@@ -106,7 +107,7 @@ public class DocumentProcessingService
 
 			await _documentRepo.UpdateStatusAsync(fileId, ProcessingStatus.Completed, token);
 			await _documentRepo.SaveChangesAsync(token);
-
+			
 			await NotifyProgress(new ProgressUpdate
 			{
 				FileId = fileId,
