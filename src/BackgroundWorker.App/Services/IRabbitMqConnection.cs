@@ -2,7 +2,7 @@
 
 namespace BackgroundWorker.App.Services;
 
-internal interface IRabbitMqConnection
+public interface IRabbitMqConnection
 {
 	Task<IChannel> GetChannelAsync();
 }
