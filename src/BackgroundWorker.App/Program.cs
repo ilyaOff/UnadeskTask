@@ -1,4 +1,3 @@
-
 using BackgroundWorker.App.Data;
 using BackgroundWorker.App.Services;
 using BackgroundWorker.Core.Interfaces;
@@ -15,10 +14,7 @@ internal class Program
 {
 	private static async Task Main(string[] args)
 	{
-
-
 		var builder = Host.CreateApplicationBuilder(args);
-
 
 		AddLogging(builder);
 		AddServices(builder);
@@ -49,13 +45,14 @@ internal class Program
 		builder.Services.AddScoped<IPdfTextExtractor, FakePdfTextExtractor>();
 		builder.Services.AddScoped<DocumentProcessingService>();
 
-		builder.Services.AddHostedService<PdfProcessingConsumer>();
-
 		builder.Services.Configure<RabbitMqSettings>(
 			builder.Configuration.GetSection("RabbitMq"));
 
-		//builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+		builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 		//builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
+
+		builder.Services.AddHostedService<PdfProcessingConsumer>();
+		builder.Services.AddHostedService<RpcRequestHandler>();
 	}
 
 	private static void AddLogging(HostApplicationBuilder builder)
