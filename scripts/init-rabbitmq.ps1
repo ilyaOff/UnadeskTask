@@ -53,12 +53,13 @@ function Test-RabbitMQReady {
 function Ensure-Queue {
     param([string]$QueueName, [bool]$Durable = $true)
     
-    Write-Host "  Creating queue: $QueueName" -ForegroundColor Gray
-    Invoke-RabbitCommand "declare queue name=$QueueName durable=$Durable"
+    $durableValue = $Durable.ToString().ToLower()
+    Write-Host "  Creating queue: $QueueName (durable=$durableValue)" -ForegroundColor Gray
+    Invoke-RabbitCommand "declare queue name=$QueueName durable=$durableValue"
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "    ✓ Queue created: $QueueName" -ForegroundColor Green
+        Write-Host "    Queue created: $QueueName" -ForegroundColor Green
     } else {
-        Write-Host "    ✗ Failed to create queue: $QueueName" -ForegroundColor Red
+        Write-Host "    Failed to create queue: $QueueName" -ForegroundColor Red
     }
 }
 
@@ -66,12 +67,13 @@ function Ensure-Queue {
 function Ensure-Exchange {
     param([string]$ExchangeName, [string]$Type = "direct", [bool]$Durable = $true)
     
-    Write-Host "  Creating exchange: $ExchangeName" -ForegroundColor Gray
-    Invoke-RabbitCommand "declare exchange name=$ExchangeName type=$Type durable=$Durable"
+    $durableValue = $Durable.ToString().ToLower()
+    Write-Host "  Creating exchange: $ExchangeName (durable=$durableValue)" -ForegroundColor Gray
+    Invoke-RabbitCommand "declare exchange name=$ExchangeName type=$Type durable=$durableValue"
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "    ✓ Exchange created: $ExchangeName" -ForegroundColor Green
+        Write-Host "    Exchange created: $ExchangeName" -ForegroundColor Green
     } else {
-        Write-Host "    ✗ Failed to create exchange: $ExchangeName" -ForegroundColor Red
+        Write-Host "    Failed to create exchange: $ExchangeName" -ForegroundColor Red
     }
 }
 
@@ -82,9 +84,9 @@ function Ensure-Binding {
     Write-Host "  Creating binding: $Source -> $Destination ($RoutingKey)" -ForegroundColor Gray
     Invoke-RabbitCommand "declare binding source=$Source destination_type=$DestinationType destination=$Destination routing_key=$RoutingKey"
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "    ✓ Binding created" -ForegroundColor Green
+        Write-Host "    Binding created" -ForegroundColor Green
     } else {
-        Write-Host "    ✗ Failed to create binding" -ForegroundColor Red
+        Write-Host "    Failed to create binding" -ForegroundColor Red
     }
 }
 
@@ -155,8 +157,7 @@ Write-Host ""
 docker exec $ContainerName rabbitmqadmin list queues --vhost=$VirtualHost --user=$RabbitMQUser --password=$RabbitMQPass
 
 Write-Host ""
-Write-Host "✅ Initialization completed successfully!" -ForegroundColor Green
+Write-Host "Initialization completed successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Management UI: http://localhost:15672" -ForegroundColor Yellow
-Write-Host "  Login: $RabbitMQUser / $RabbitMQPass"
-Write-Host ""
+Write-Host "  Login: $RabbitMQUser" -ForegroundColor Yellow
