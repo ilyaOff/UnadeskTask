@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Shared.Interfaces;
 
@@ -9,16 +10,32 @@ public class LocalFileStorageService : IFileStorageService
 	private readonly string _storagePath;
 	private readonly ILogger<LocalFileStorageService> _logger;
 
-	public LocalFileStorageService(ILogger<LocalFileStorageService> logger)
+	public LocalFileStorageService(
+		IOptions<FileStorageSettings> settings,
+		ILogger<LocalFileStorageService> logger)
 	{
-		_storagePath = Path.Combine(Directory.GetCurrentDirectory(), "Storage", "Files");
 		_logger = logger;
 
+		var storageSettings = settings.Value;
+
+		if(storageSettings.UseAbsolutePath)
+		{
+			_storagePath = storageSettings.StoragePath;
+		}
+		else
+		{
+			// Относительный путь от текущей директории
+			_storagePath = Path.Combine(Directory.GetCurrentDirectory(), storageSettings.StoragePath);
+		}
+
+		// Создаем директорию, если не существует
 		if(!Directory.Exists(_storagePath))
 		{
 			Directory.CreateDirectory(_storagePath);
 			_logger.LogInformation("Created storage directory at {Path}", _storagePath);
 		}
+
+		_logger.LogInformation("FileStorage initialized at: {StoragePath}", _storagePath);
 	}
 
 	public async Task<bool> SaveFileAsync(

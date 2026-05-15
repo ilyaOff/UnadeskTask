@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-using BackgroundWorker.Core.Entities;
+﻿using BackgroundWorker.Core.Entities;
 using BackgroundWorker.Core.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 
 using Shared.Enums;
+
+using Document = BackgroundWorker.Core.Entities.Document;
 
 namespace BackgroundWorker.App.Data;
 
@@ -60,6 +60,16 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 		});
 	}
 
+	public Task<bool> DocumentExistsAsync(Guid documentId, CancellationToken ct = default)
+	{
+		return Documents.AnyAsync(d => d.Id == documentId, ct);
+	}
+
+	public async Task<Document?> GetDocumentAsync(Guid documentId, CancellationToken ct = default)
+	{
+		return await Documents.FirstOrDefaultAsync(d => d.Id == documentId);
+	}
+
 	public async Task AddDocumentAsync(Document document, CancellationToken ct = default)
 	{
 		await Documents.AddAsync(document, ct);
@@ -70,13 +80,22 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 		await DocumentPages.AddAsync(page, ct);
 	}
 
-	public Task UpdateDocumentStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default)
+	public Task UpdateStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default)
 	{
 		// Оптимистичное обновление без загрузки всей сущности
 		return Documents
 			.Where(d => d.Id == documentId)
 			.ExecuteUpdateAsync(setters => setters
 				.SetProperty(d => d.Status, status)
+				.SetProperty(d => d.LastUpdatedAt, DateTime.UtcNow), ct);
+	}
+
+	public Task UpdateDocumentPagesCountAsync(Guid documentId, int totalPages, CancellationToken ct = default)
+	{
+		return Documents
+			.Where(d => d.Id == documentId)
+			.ExecuteUpdateAsync(setters => setters
+				.SetProperty(d => d.TotalPages, totalPages)
 				.SetProperty(d => d.LastUpdatedAt, DateTime.UtcNow), ct);
 	}
 
@@ -90,13 +109,12 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 			.ToListAsync(ct);
 	}
 
-	public Task<bool> DocumentExistsAsync(Guid documentId, CancellationToken ct = default)
-	{
-		return Documents.AnyAsync(d => d.Id == documentId, ct);
-	}
+	
 
 	Task IDocumentRepository.SaveChangesAsync(CancellationToken ct)
 	{
 		return SaveChangesAsync(ct);
 	}
+
+	
 }
