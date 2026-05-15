@@ -44,9 +44,17 @@ public class PdfProcessingConsumer : BackgroundService
 			autoDelete: false,
 			cancellationToken: stoppingToken);
 
+		await _channel.QueueDeclareAsync(
+		   queue: "pdf.error.queue",
+		   durable: true,
+		   exclusive: false,
+		   autoDelete: false,
+		   cancellationToken: stoppingToken);
+
 		var consumer = new AsyncEventingBasicConsumer(_channel);
 		consumer.ReceivedAsync += async (sender, args) =>
 		{
+			var deliveryTag = args.DeliveryTag;
 			try
 			{
 				var body = args.Body.ToArray();
@@ -54,8 +62,9 @@ public class PdfProcessingConsumer : BackgroundService
 
 				if(message == null)
 				{
-					_logger.LogError("Failed to deserialize message");
-					await _channel.BasicNackAsync(args.DeliveryTag, false, false);
+					_logger.LogError("Failed to deserialize message, sending to DLQ");
+					await MoveToDeadLetterQueue(args, "Invalid message format");
+					await _channel.BasicNackAsync(deliveryTag, false, false);
 					return;
 				}
 
@@ -68,10 +77,30 @@ public class PdfProcessingConsumer : BackgroundService
 
 				await _channel.BasicAckAsync(args.DeliveryTag, false);
 			}
+			catch(FileNotFoundException ex)
+			{
+				_logger.LogWarning(ex, "File not found, moving to DLQ");
+				await MoveToDeadLetterQueue(args, ex.Message);
+				await _channel.BasicAckAsync(deliveryTag, false);
+			}
 			catch(Exception ex)
 			{
-				_logger.LogError(ex, "Error processing message");
-				await _channel.BasicNackAsync(args.DeliveryTag, false, true); // requeue
+				_logger.LogError(ex, "Error processing message, will retry");
+
+				// Проверяем количество редиливров
+				var retryCount = GetRetryCount(args.BasicProperties);
+
+				if(retryCount >= 3)
+				{
+					_logger.LogError("Max retry count reached, moving to DLQ");
+					await MoveToDeadLetterQueue(args, $"Max retries exceeded: {ex.Message}");
+					await _channel.BasicAckAsync(deliveryTag, false);
+				}
+				else
+				{
+					// Отправляем на повтор с задержкой
+					await _channel.BasicNackAsync(deliveryTag, false, true);
+				}
 			}
 		};
 
@@ -93,4 +122,49 @@ public class PdfProcessingConsumer : BackgroundService
 		}
 		await base.StopAsync(cancellationToken);
 	}
+
+	private async Task MoveToDeadLetterQueue(BasicDeliverEventArgs args, string errorMessage)
+	{
+		if(_channel == null)
+			return;
+
+		try
+		{
+			var originalBody = args.Body.ToArray();
+			var properties = new BasicProperties
+			{
+				Persistent = true,
+				Headers = new Dictionary<string, object?>
+				{
+					{ "x-error", errorMessage },
+					{ "x-original-routing-key", args.RoutingKey },
+					{ "x-timestamp", DateTime.UtcNow.ToString("O") }
+				}
+			};
+
+			await _channel.BasicPublishAsync(
+				exchange: "",
+				routingKey: "pdf.error.queue",
+				mandatory: true,
+				basicProperties: properties,
+				body: originalBody);
+
+			_logger.LogInformation("Moved message to DLQ: {ErrorMessage}", errorMessage);
+		}
+		catch(Exception ex)
+		{
+			_logger.LogError(ex, "Failed to move message to DLQ");
+		}
+	}
+
+	private int GetRetryCount(IReadOnlyBasicProperties properties)
+	{
+		if(properties.Headers != null &&
+			properties.Headers.TryGetValue("x-retry-count", out var retryObj))
+		{
+			return Convert.ToInt32(retryObj);
+		}
+		return 0;
+	}
+
 }

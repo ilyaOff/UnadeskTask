@@ -51,11 +51,16 @@ function Test-RabbitMQReady {
 
 # Функция для создания очереди
 function Ensure-Queue {
-    param([string]$QueueName, [bool]$Durable = $true)
+    param(
+        [string]$QueueName, 
+        [bool]$Durable = $true
+    )
     
     $durableValue = $Durable.ToString().ToLower()
+    
     Write-Host "  Creating queue: $QueueName (durable=$durableValue)" -ForegroundColor Gray
     Invoke-RabbitCommand "declare queue name=$QueueName durable=$durableValue"
+    
     if ($LASTEXITCODE -eq 0) {
         Write-Host "    Queue created: $QueueName" -ForegroundColor Green
     } else {
@@ -127,24 +132,31 @@ Write-Host ""
 Write-Host "Initializing queues..." -ForegroundColor Yellow
 Write-Host ""
 
-# 1. Создание очередей
-Write-Host "[1/3] Creating queues..." -ForegroundColor Cyan
+# 1. Создание обменников
+Write-Host "[1/4] Creating exchanges..." -ForegroundColor Cyan
+Ensure-Exchange -ExchangeName "pdf.exchange" -Type "direct"
+Ensure-Exchange -ExchangeName "pdf.dlx" -Type "direct"  # Dead Letter Exchange
+
+Write-Host ""
+
+# 2. Создание очередей
+Write-Host "[2/4] Creating queues..." -ForegroundColor Cyan
 Ensure-Queue -QueueName "pdf.processing.queue"
+Ensure-Queue -QueueName "pdf.error.queue"
 Ensure-Queue -QueueName "rpc.get_documents"
 Ensure-Queue -QueueName "rpc.get_pages"
-Ensure-Queue -QueueName "pdf.error.queue"
 
 Write-Host ""
 
-# 2. Создание обменников
-Write-Host "[2/3] Creating exchanges..." -ForegroundColor Cyan
-Ensure-Exchange -ExchangeName "pdf.exchange" -Type "direct"
-
-Write-Host ""
-
-# 3. Создание привязок
-Write-Host "[3/3] Creating bindings..." -ForegroundColor Cyan
+# 3. Создание привязок для основного обменника
+Write-Host "[3/4] Creating bindings for main exchange..." -ForegroundColor Cyan
 Ensure-Binding -Source "pdf.exchange" -DestinationType "queue" -Destination "pdf.processing.queue" -RoutingKey "pdf.process"
+
+Write-Host ""
+
+# 4. Создание привязок для Dead Letter Exchange
+Write-Host "[4/4] Creating bindings for Dead Letter Exchange..." -ForegroundColor Cyan
+Ensure-Binding -Source "pdf.dlx" -DestinationType "queue" -Destination "pdf.error.queue" -RoutingKey "pdf.error"
 
 Write-Host ""
 
@@ -158,6 +170,10 @@ docker exec $ContainerName rabbitmqadmin list queues --vhost=$VirtualHost --user
 
 Write-Host ""
 Write-Host "Initialization completed successfully!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Dead Letter Queue configured:" -ForegroundColor Yellow
+Write-Host "  - Failed messages go to: pdf.error.queue" -ForegroundColor Gray
+Write-Host "  - Exchange: pdf.dlx" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Management UI: http://localhost:15672" -ForegroundColor Yellow
 Write-Host "  Login: $RabbitMQUser" -ForegroundColor Yellow

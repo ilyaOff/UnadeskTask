@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 using Shared.Enums;
 
+using Document = BackgroundWorker.Core.Entities.Document;
+
 namespace BackgroundWorker.App.Data;
 
 public class ApplicationDbContext : DbContext, IDocumentRepository
@@ -58,6 +60,16 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 		});
 	}
 
+	public Task<bool> DocumentExistsAsync(Guid documentId, CancellationToken ct = default)
+	{
+		return Documents.AnyAsync(d => d.Id == documentId, ct);
+	}
+
+	public async Task<Document?> GetDocumentAsync(Guid documentId, CancellationToken ct = default)
+	{
+		return await Documents.FirstOrDefaultAsync(d => d.Id == documentId);
+	}
+
 	public async Task AddDocumentAsync(Document document, CancellationToken ct = default)
 	{
 		await Documents.AddAsync(document, ct);
@@ -97,10 +109,7 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 			.ToListAsync(ct);
 	}
 
-	public Task<bool> DocumentExistsAsync(Guid documentId, CancellationToken ct = default)
-	{
-		return Documents.AnyAsync(d => d.Id == documentId, ct);
-	}
+	
 
 	Task IDocumentRepository.SaveChangesAsync(CancellationToken ct)
 	{
