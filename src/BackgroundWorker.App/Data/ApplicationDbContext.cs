@@ -11,7 +11,6 @@ namespace BackgroundWorker.App.Data;
 
 public class ApplicationDbContext : DbContext, IDocumentRepository
 {
-	[Column(TypeName = "varchar(200)")]
 	public DbSet<Document> Documents { get; set; }
 	public DbSet<DocumentPage> DocumentPages { get; set; }
 
