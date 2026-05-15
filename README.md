@@ -23,7 +23,7 @@
 
 ## Быстрый старт
 
-1. Запуск RabbitMQ
+1. Запуск RabbitMQ и PostgreSQL
 ```bash
 # Запуск контейнера
 docker-compose up -d
@@ -31,26 +31,13 @@ docker-compose up -d
 # Проверка статуса
 docker ps
 ```
-2. Запуск RabbitMQ
+2. Создание очередей
 Windows (PowerShell):
 ```powershell
 .\scripts\init-rabbitmq.ps1
 ```
-3. Настройка базы данных
-```bash
-cd src/BackgroundWorker.App
 
-# Установка инструментов EF (если не установлены)
-dotnet tool install --global dotnet-ef
-
-# Создание и применение миграций
-dotnet ef database update
-
-# Проверка создания БД
-ls pdf.db
-```
-
-4. Настройка хранилища файлов
+3. Настройка хранилища файлов
 Измените путь в appsettings.json обоих сервисов:
 ```json
 "FileStorage": {
@@ -58,7 +45,7 @@ ls pdf.db
   "UseAbsolutePath": true
 }
 ```
-5. Запуск сервисов
+4. Запуск сервисов
 Терминал 1 - Background Worker:
 ```bash
 cd src/BackgroundWorker.App
