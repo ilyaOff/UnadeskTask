@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 using Shared.Interfaces;
 
@@ -27,10 +20,7 @@ public class LocalFileStorageService : IFileStorageService
 			_logger.LogInformation("Created storage directory at {Path}", _storagePath);
 		}
 	}
-	Task<bool> IFileStorageService.SaveFileAsync(Guid fileId, Stream fileStream, CancellationToken cancellationToken)
-	{
-		throw new NotImplementedException();
-	}
+
 	public async Task<bool> SaveFileAsync(
 		Guid fileId,
 		Stream fileStream,
@@ -98,11 +88,4 @@ public class LocalFileStorageService : IFileStorageService
 	{
 		return Path.Combine(_storagePath, $"{fileId}.pdf");
 	}
-
-
-
-
-
-
-
 }
