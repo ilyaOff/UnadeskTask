@@ -7,7 +7,15 @@ public class RabbitMqSettings
 	public string UserName { get; set; } = "admin";
 	public string Password { get; set; } = "admin123";
 	public string VirtualHost { get; set; } = "/";
-	public string QueueName { get; set; } = "pdf.processing.queue";
-	public string ExchangeName { get; set; } = "pdf.exchange";
-	public string RoutingKey { get; set; } = "pdf.process";
+
+	// Очереди для команд
+	public string PdfProcessingQueue { get; set; } = "pdf.processing.queue";
+
+	// Очереди для RPC запросов
+	public string RpcGetDocumentsQueue { get; set; } = "rpc.get_documents";
+	public string RpcGetPagesQueue { get; set; } = "rpc.get_pages";
+
+	// Обменники
+	public string PdfExchange { get; set; } = "pdf.exchange";
+	public string PdfRoutingKey { get; set; } = "pdf.process";
 }
