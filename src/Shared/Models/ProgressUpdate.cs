@@ -33,6 +33,11 @@ public record ProgressUpdate
 	public int TotalPages { get; set; }
 
 	/// <summary>
+	/// Дополнительное сообщение (например, текст ошибки)
+	/// </summary>
+	public string? Message { get; set; }
+
+	/// <summary>
 	/// Прогресс в процентах (вычисляемое поле)
 	/// </summary>
 	public int ProgressPercent => TotalPages > 0

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-using BackgroundWorker.Core.Entities;
+﻿using BackgroundWorker.Core.Entities;
 using BackgroundWorker.Core.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
@@ -70,13 +68,22 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 		await DocumentPages.AddAsync(page, ct);
 	}
 
-	public Task UpdateDocumentStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default)
+	public Task UpdateStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default)
 	{
 		// Оптимистичное обновление без загрузки всей сущности
 		return Documents
 			.Where(d => d.Id == documentId)
 			.ExecuteUpdateAsync(setters => setters
 				.SetProperty(d => d.Status, status)
+				.SetProperty(d => d.LastUpdatedAt, DateTime.UtcNow), ct);
+	}
+
+	public Task UpdateDocumentPagesCountAsync(Guid documentId, int totalPages, CancellationToken ct = default)
+	{
+		return Documents
+			.Where(d => d.Id == documentId)
+			.ExecuteUpdateAsync(setters => setters
+				.SetProperty(d => d.TotalPages, totalPages)
 				.SetProperty(d => d.LastUpdatedAt, DateTime.UtcNow), ct);
 	}
 
@@ -99,4 +106,6 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 	{
 		return SaveChangesAsync(ct);
 	}
+
+	
 }

@@ -10,8 +10,10 @@ public interface IDocumentRepository
 
 	Task AddPageAsync(DocumentPage page, CancellationToken ct = default);
 
-	Task UpdateDocumentStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default);
+	Task UpdateStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default);
 
+	Task UpdateDocumentPagesCountAsync(Guid documentId, int totalPages, CancellationToken token = default));
+	
 	Task<List<DocumentPage>> GetPagesAsync(Guid documentId, int fromPage, int toPage, CancellationToken ct = default);
 
 	Task<bool> DocumentExistsAsync(Guid documentId, CancellationToken ct = default);
