@@ -26,11 +26,13 @@ internal class Program
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen();
 
+
 		services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
 		services.AddSingleton<IRabbitMqRpcClient, RabbitMqRpcClient>();
 		services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 		services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 
+		services.Configure<FileStorageSettings>(configuration.GetSection("FileStorage"));
 		services.AddScoped<IFileStorageService, LocalFileStorageService>();
 	}
 

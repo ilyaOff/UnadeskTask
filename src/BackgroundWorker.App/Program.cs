@@ -41,9 +41,8 @@ internal class Program
 		services.AddScoped<IDocumentRepository>(sp =>
 			sp.GetRequiredService<ApplicationDbContext>());
 
+		services.Configure<FileStorageSettings>(configuration.GetSection("FileStorage"));
 		services.AddScoped<IFileStorageService, LocalFileStorageService>();
-		services.AddScoped<IPdfTextExtractor, FakePdfTextExtractor>();
-		services.AddScoped<DocumentProcessingService>();
 
 		services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
 
@@ -52,6 +51,9 @@ internal class Program
 
 		services.AddHostedService<PdfProcessingConsumer>();
 		services.AddHostedService<RpcRequestHandler>();
+
+		services.AddScoped<IPdfTextExtractor, FakePdfTextExtractor>();
+		services.AddScoped<DocumentProcessingService>();
 	}
 
 	private static void AddLogging(HostApplicationBuilder builder)
