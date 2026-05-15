@@ -23,7 +23,7 @@ public class DocumentProcessingService
 		_fileStorage = fileStorage;
 	}
 
-	public async Task ProcessDocumentAsync(PdfProcessingMessage message)
+	public async Task ProcessDocumentAsync(PdfProcessingMessage message, CancellationToken token = default)
 	{
 		var fileId = message.FileId;
 
@@ -35,11 +35,11 @@ public class DocumentProcessingService
 			Status = ProcessingStatus.Extracting
 		};
 
-		await _documentRepo.AddDocumentAsync(document);
+		await _documentRepo.AddDocumentAsync(document, token);
 
-		await using var stream = await _fileStorage.GetFileStreamAsync(fileId);
+		await using var stream = await _fileStorage.GetFileStreamAsync(fileId, token);
 
-		await foreach(var page in _pdfExtractor.ExtractTextAsync(stream))
+		await foreach(var page in _pdfExtractor.ExtractTextAsync(stream, token))
 		{
 			var pageEntity = new DocumentPage
 			{
@@ -49,10 +49,10 @@ public class DocumentProcessingService
 				Text = page.Text
 			};
 
-			await _documentRepo.AddPageAsync(pageEntity);
+			await _documentRepo.AddPageAsync(pageEntity, token);
 		}
 
-		await _documentRepo.UpdateDocumentStatusAsync(fileId, ProcessingStatus.Completed);
-		await _documentRepo.SaveChangesAsync();
+		await _documentRepo.UpdateDocumentStatusAsync(fileId, ProcessingStatus.Completed, token);
+		await _documentRepo.SaveChangesAsync(token);
 	}
 }
