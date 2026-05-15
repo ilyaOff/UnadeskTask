@@ -1,4 +1,6 @@
-﻿using Infrastructure.RabbitMq;
+﻿using ApiGateway.Filters;
+
+using Infrastructure.RabbitMq;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -32,6 +34,7 @@ public class DocumentsController : ControllerBase
 	}
 
 	[HttpPost("upload")]
+	[ValidatePdf]
 	public async Task<IActionResult> Upload(IFormFile file)
 	{
 		var fileId = Guid.NewGuid();
