@@ -20,17 +20,33 @@ internal class Program
 		AddServices(builder.Services, builder.Configuration, builder.Environment);
 
 		var app = builder.Build();
-
+		// Временное решение для разработки - пересоздать БД
+		if(builder.Environment.IsDevelopment())
+		{
+			using(var scope = app.Services.CreateScope())
+			{
+				var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+				dbContext.Database.EnsureDeleted(); // Удалить существующую БД
+				dbContext.Database.EnsureCreated(); // Создать заново
+			}
+		}
 		app.Run();
 	}
 
 	private static void AddServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
 	{
+		// DbContext для PostgreSQL
 		services.AddDbContext<ApplicationDbContext>(options =>
 		{
 			var connectionString = configuration.GetConnectionString("DefaultConnection");
-			options.UseSqlite(connectionString);
-			// Для разработки полезно включить детальное логирование SQL
+			options.UseNpgsql(connectionString, npgsqlOptions =>
+			{
+				// Настройка миграций
+				npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+				// Включение чувствительных к регистру поисков (опционально)
+			});
+
+			// Для разработки - логирование SQL
 			if(environment.IsDevelopment())
 			{
 				options.EnableSensitiveDataLogging();

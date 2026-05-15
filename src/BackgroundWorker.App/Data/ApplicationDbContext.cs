@@ -23,9 +23,10 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 	{
 		base.OnModelCreating(modelBuilder);
 
-		// Настройка Document
+		// Настройка Document для PostgreSQL
 		modelBuilder.Entity<Document>(entity =>
 		{
+			entity.ToTable("Documents");
 			entity.HasKey(e => e.Id);
 
 			entity.Property(e => e.FileName)
@@ -34,6 +35,9 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 
 			entity.Property(e => e.Status)
 				.HasConversion<int>();
+
+			entity.Property(e => e.Id)
+				 .ValueGeneratedNever(); // Явно указываем, что значение не генерируется БД
 
 			entity.HasIndex(e => e.Status);
 			entity.HasIndex(e => e.UploadedAt);
@@ -44,17 +48,20 @@ public class ApplicationDbContext : DbContext, IDocumentRepository
 				.OnDelete(DeleteBehavior.Cascade);
 		});
 
-		// Настройка DocumentPage
+		// Настройка DocumentPage для PostgreSQL
 		modelBuilder.Entity<DocumentPage>(entity =>
 		{
+			entity.ToTable("DocumentPages");
 			entity.HasKey(e => e.Id);
+
+			entity.Property(e => e.Id)
+				 .ValueGeneratedNever(); // Явно указываем, что значение не генерируется БД
 
 			entity.Property(e => e.Text)
 				.IsRequired()
 				.HasColumnType("text"); // PostgreSQL text тип
-
 			entity.HasIndex(e => new { e.DocumentId, e.PageNumber })
-				.IsUnique(); // У одного документа не может быть двух страниц с одинаковым номером
+				.IsUnique();
 
 			entity.HasIndex(e => e.PageNumber);
 		});
