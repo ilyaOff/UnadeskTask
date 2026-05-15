@@ -1,10 +1,7 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 using BackgroundWorker.Core.Services;
 
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using RabbitMQ.Client;
