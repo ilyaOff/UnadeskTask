@@ -16,10 +16,6 @@ public interface IRabbitMqPublisher
 	/// </summary>
 	Task PublishAsync<T>(T message, CancellationToken cancellationToken = default) where T : class;
 
-	/// <summary>
-	/// Публикует сообщение с указанием конкретной очереди
-	/// </summary>
-	Task PublishToQueueAsync<T>(T message, string queueName, CancellationToken cancellationToken = default) where T : class;
 }
 
 public class RabbitMqPublisher : IRabbitMqPublisher
@@ -71,36 +67,4 @@ public class RabbitMqPublisher : IRabbitMqPublisher
 			typeof(T).Name, _settings.PdfExchange, _settings.PdfRoutingKey);
 	}
 
-	public async Task PublishToQueueAsync<T>(T message, string queueName, CancellationToken cancellationToken = default) where T : class
-	{
-		var channel = await GetChannelAsync();
-
-		// Убеждаемся, что очередь существует
-		await channel.QueueDeclareAsync(
-			queue: queueName,
-			durable: true,
-			exclusive: false,
-			autoDelete: false,
-			cancellationToken: cancellationToken);
-
-		var body = JsonSerializer.SerializeToUtf8Bytes(message);
-
-		var properties = new BasicProperties
-		{
-			Persistent = true,
-			ContentType = "application/json",
-			Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-		};
-
-		// Публикуем напрямую в очередь (через default exchange)
-		await channel.BasicPublishAsync(
-			exchange: "",
-			routingKey: queueName,
-			mandatory: true,
-			basicProperties: properties,
-			body: body,
-			cancellationToken: cancellationToken);
-
-		_logger.LogDebug("Published message to queue {QueueName}", queueName);
-	}
 }
