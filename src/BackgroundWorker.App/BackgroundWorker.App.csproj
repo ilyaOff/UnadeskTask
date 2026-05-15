@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>dotnet-BackgroundWorker.App-c4554d42-8583-4d2f-89d1-5a0b5b5dcf64</UserSecretsId>
 	</PropertyGroup>
 
