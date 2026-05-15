@@ -12,7 +12,7 @@ public interface IDocumentRepository
 
 	Task UpdateStatusAsync(Guid documentId, ProcessingStatus status, CancellationToken ct = default);
 
-	Task UpdateDocumentPagesCountAsync(Guid documentId, int totalPages, CancellationToken token = default));
+	Task UpdateDocumentPagesCountAsync(Guid documentId, int totalPages, CancellationToken token = default);
 	
 	Task<List<DocumentPage>> GetPagesAsync(Guid documentId, int fromPage, int toPage, CancellationToken ct = default);
 
