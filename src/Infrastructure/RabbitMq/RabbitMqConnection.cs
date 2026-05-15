@@ -2,8 +2,6 @@
 
 using RabbitMQ.Client;
 
-using Shared.RabbitMq;
-
 namespace Infrastructure.RabbitMq;
 
 public interface IRabbitMqConnection

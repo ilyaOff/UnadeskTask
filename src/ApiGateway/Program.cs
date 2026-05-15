@@ -2,7 +2,6 @@ using Infrastructure.FileStorage;
 using Infrastructure.RabbitMq;
 
 using Shared.Interfaces;
-using Shared.RabbitMq;
 
 internal class Program
 {
@@ -23,12 +22,13 @@ internal class Program
 
 	private static void AddServices(IServiceCollection services, IConfiguration configuration)
 	{
+		services.AddControllers();
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen();
 
 		services.Configure<RabbitMqSettings>(configuration.GetSection("RabbitMq"));
 		services.AddSingleton<IRabbitMqRpcClient, RabbitMqRpcClient>();
-
+		services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 		services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 
 		services.AddScoped<IFileStorageService, LocalFileStorageService>();
@@ -44,5 +44,6 @@ internal class Program
 		}
 
 		app.UseHttpsRedirection();
+		app.MapControllers();
 	}
 }

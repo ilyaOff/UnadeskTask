@@ -1,11 +1,10 @@
 ﻿using Infrastructure.RabbitMq;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 using Shared.Interfaces;
 using Shared.Models;
-using Shared.RabbitMq;
-
 namespace ApiGateway.Controllers;
 
 [ApiController]
@@ -23,13 +22,13 @@ public class DocumentsController : ControllerBase
 		IRabbitMqRpcClient rpcClient,
 		IRabbitMqPublisher publisher,
 		IFileStorageService fileStorage,
-		RabbitMqSettings settings)
+		IOptions<RabbitMqSettings> settings)
 	{
 		_logger = logger;
 		_rpcClient = rpcClient;
 		_publisher = publisher;
 		_fileStorage = fileStorage;
-		_settings = settings;
+		_settings = settings.Value;
 	}
 
 	[HttpPost("upload")]

@@ -9,7 +9,6 @@ using Infrastructure.RabbitMq;
 using Microsoft.EntityFrameworkCore;
 
 using Shared.Interfaces;
-using Shared.RabbitMq;
 
 internal class Program
 {

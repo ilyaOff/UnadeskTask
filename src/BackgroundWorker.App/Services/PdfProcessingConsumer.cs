@@ -10,7 +10,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 using Shared.Models;
-using Shared.RabbitMq;
 
 namespace BackgroundWorker.App.Services;
 

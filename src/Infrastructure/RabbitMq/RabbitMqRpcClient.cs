@@ -7,8 +7,6 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-using Shared.RabbitMq;
-
 namespace Infrastructure.RabbitMq;
 
 public interface IRabbitMqRpcClient : IAsyncDisposable

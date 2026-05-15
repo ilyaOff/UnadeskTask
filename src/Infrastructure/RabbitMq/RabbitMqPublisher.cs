@@ -5,8 +5,6 @@ using Microsoft.Extensions.Options;
 
 using RabbitMQ.Client;
 
-using Shared.RabbitMq;
-
 namespace Infrastructure.RabbitMq;
 
 public interface IRabbitMqPublisher

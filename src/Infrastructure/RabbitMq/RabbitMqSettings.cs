@@ -1,4 +1,4 @@
-﻿namespace Shared.RabbitMq;
+﻿namespace Infrastructure.RabbitMq;
 
 public class RabbitMqSettings
 {
