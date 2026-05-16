@@ -8,7 +8,7 @@
 - **API Gateway** - принимает файлы от пользователя, отправляет команды в RabbitMQ
 - **Background Worker** - обрабатывает PDF, извлекает текст, сохраняет в SQLite
 - **RabbitMQ** - асинхронный обмен сообщениями между сервисами
-- **SQLite** - хранение извлеченного текста
+- **PostgreSQL** - хранение извлеченного текста
 - **Local File Storage** - временное хранение загруженных PDF файлов
 
 ## Технологии
@@ -16,7 +16,7 @@
 - .NET 8.0
 - ASP.NET Core
 - RabbitMQ (Docker)
-- SQLite + Entity Framework Core
+- PostgreSQL - хранение извлеченного текста + Entity Framework Core
 - Swagger
 
 
